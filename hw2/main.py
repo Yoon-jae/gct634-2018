@@ -98,7 +98,14 @@ def main():
 
     # run
     start_time = time.time()
+
+    # save model
     fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs, args)
+    torch.save(model, "model.pt")
+
+    # load model
+    #model = torch.load("model.pt")
+
     print("--- %s seconds spent ---" % (time.time() - start_time))
 
     # evaluation
