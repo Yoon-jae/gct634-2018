@@ -32,8 +32,8 @@ class model_1DCNN(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(96, 64),
-            nn.Linear(64, 10)
+            nn.Linear(96, 32),
+            nn.Linear(32, 10)
         )
 
     def forward(self, x):

@@ -76,10 +76,7 @@ def load_data(label_path, mel_path, melBins, frames):
     return x_train, y_train, x_valid, y_valid, x_test, y_test
 
 
-def augment_data(X, y, melBins=128):
-    frame_size = 256
-    hop_size = 128
-
+def augment_data(X, y, frame_size=256, hop_size=128, melBins=128):
     num_of_examples, num_of_features, total_frame = X.shape  # 443 128 1287
     starts = [start for start in range(0, total_frame - frame_size, hop_size)]
     split_size = len(starts)
