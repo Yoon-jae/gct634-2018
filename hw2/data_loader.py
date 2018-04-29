@@ -22,10 +22,10 @@ class gtzandata(Dataset):
     def __getitem__(self, index):
 
         # 30 sec -> 1287 frames
-        mel = self.x[index]  # 128, 1287
+        # mel = self.x[index]  # 128, 1287
 
         # 3 sec -> 128 frames
-        num_frames = 128
+        num_frames = 512
         start = random.randint(0, self.x[index].shape[1] - num_frames)
         mel = self.x[index][:, start:start + num_frames]  # 128, 128
 

@@ -9,7 +9,8 @@ from __future__ import print_function
 import torch
 import torch.nn as nn
 
-batch_size = 5
+# batch_size = 5
+# num_frames = 512
 
 # model class
 class model_1DCNN(nn.Module):
@@ -50,10 +51,3 @@ class model_1DCNN(nn.Module):
         # out = self.activation(out)
 
         return out
-
-class model_2dCNN(nn.Module):
-    def __init__(self):
-        super(model_2dCNN, self).__init__()
-
-    def forward(self, x):
-        pass

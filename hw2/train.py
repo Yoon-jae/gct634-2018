@@ -12,6 +12,14 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
+from logger import Logger
+
+# Set the logger
+logger = Logger('./logs')
+
+
+def to_np(x):
+    return x.data.cpu().numpy()
 
 
 # train / eval
@@ -43,9 +51,29 @@ def fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs,
             loss.backward()
             optimizer.step()
 
+            # Compute accuarcy
+            _, argmax = torch.max(outputs, 1)
+            accuracy = (label == argmax.squeeze()).float().mean()
+
             if (i + 1) % 10 == 0:
-                print("Epoch [%d/%d], Iter [%d/%d] loss : %.4f"
-                      % (epoch + 1, num_epochs, i + 1, len(train_loader), loss.data[0]))
+                print("Epoch [%d/%d], Iter [%d/%d], Loss : %.4f, Acc: %.4f"
+                      % (epoch + 1, num_epochs, i + 1, len(train_loader),
+                         loss.data[0], accuracy.data[0]))
+
+                # (1) Log the scalar values
+                info = {
+                    'loss': loss.data[0],
+                    'accuracy': accuracy.data[0]
+                }
+
+                for tag, value in info.items():
+                    logger.scalar_summary(tag, value, i + 1)
+
+                # (2) Log values and gradients of the parameters (histogram)
+                for tag, value in model.named_parameters():
+                    tag = tag.replace('.', '/')
+                    logger.histo_summary(tag, to_np(value), i + 1)
+                    logger.histo_summary(tag + '/grad', to_np(value.grad), i + 1)
 
         eval_loss, _, _ = eval(model, valid_loader, criterion, args)
         scheduler.step(eval_loss)  # use the learning rate scheduler

@@ -36,7 +36,9 @@ print("Args :", args)
 melBins = 128
 hop = 512
 frames = int(29.9 * 22050.0 / hop)
-batch_size = 100
+
+batch_size = 5
+
 learning_rate = 0.01
 num_epochs = 50
 
@@ -82,8 +84,8 @@ def main():
     print("Model :", model)
 
     # loss function 
-    criterion = nn.NLLLoss()
-    # criterion = nn.CrossEntropyLoss()
+    # criterion = nn.NLLLoss()
+    criterion = nn.CrossEntropyLoss()
 
     # run
     start_time = time.time()
