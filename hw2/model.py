@@ -12,6 +12,8 @@ import torch.nn as nn
 # batch_size = 64
 # num_frames = 512
 
+num_of_split = 5
+
 # model class
 class model_1DCNN(nn.Module):
     def __init__(self):
@@ -32,14 +34,18 @@ class model_1DCNN(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(224, 64),
+            nn.Linear(96, 64),
             nn.Linear(64, 10)
         )
 
         # self.activation = nn.Softmax()
 
     def forward(self, x):
-        # input x: minibatch x 128 x 128
+        # input x: minibatch x 128 x 1287
+
+        batch_size, num_of_features, total_frame = x.shape
+        interval = int(total_frame / num_of_split)
+
         out = self.conv0(x)  # 5 32 63
         out = self.conv1(out)  # 5 32 7
 

@@ -59,10 +59,17 @@ def init_weights(m):
 
 def main():
     # load normalized mel-spectrograms and labels
-    x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
-    print(x_train.shape, y_train.shape, x_valid.shape, y_valid.shape, x_test.shape, y_test.shape)
 
-    # data loader    
+    # 443, 197, 290 (128, 1287)
+    x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
+
+    # 3987, 1773, 2610 (128, 256)
+    x_train, y_train, x_valid, y_valid, x_test, y_test = augment_data(x_train, y_train, x_valid, y_valid, x_test, y_test, melBins)
+    print("train data: ", x_train.shape, y_train.shape, type(x_train), type(y_train))
+    print("valid data: ", x_valid.shape, y_valid.shape)
+    print("test data : ", x_test.shape, y_test.shape)
+
+    # data loader
     train_data = gtzandata(x_train, y_train)
     valid_data = gtzandata(x_valid, y_valid)
     test_data = gtzandata(x_test, y_test)
