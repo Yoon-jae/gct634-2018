@@ -43,6 +43,7 @@ def fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs,
                 label = Variable(label).type(torch.LongTensor)
 
             optimizer.zero_grad()
+
             outputs = model(audio)
 
             # print(outputs, label)
@@ -100,8 +101,8 @@ def eval(model, valid_loader, criterion, args):
             audio = Variable(audio).type(torch.FloatTensor)
             label = Variable(label).type(torch.LongTensor)
 
-        outputs = model(audio) # batch size x 10
-        # label -> batch x 1
+        outputs = model(audio)  # batch size x 10
+
 
         loss = criterion(outputs, label)
 

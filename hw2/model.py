@@ -72,7 +72,7 @@ class model_2DCNN(nn.Module):
     def forward(self, x):
         # input x: minibatch x 128 x 256
 
-        out = x.view(x.size(0), 1, x.size(1), x.size(2))  # batch_size, 1,
+        out = x.view(x.size(0), 1, x.size(1), x.size(2))  # batch_size, 1, 128, 256
 
         out = self.conv0(x)  # 5 32 63
         out = self.conv1(out)  # 5 32 7

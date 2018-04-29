@@ -63,8 +63,10 @@ def main():
     # 443, 197, 290 (128, 1287)
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
 
-    # 3987, 128, 256
+    # 3987, 1773, 2610 (128, 256)
     x_train, y_train = augment_data(x_train, y_train)
+    x_valid, y_valid = augment_data(x_valid, y_valid)
+    x_test, y_test = augment_data(x_test, y_test)
 
     # x_test, y_test
     print("train data: ", x_train.shape, y_train.shape, type(x_train), type(y_train))
@@ -72,13 +74,13 @@ def main():
     print("test data : ", x_test.shape, y_test.shape)
 
     # data loader
-    train_data = gtzan_train_data(x_train, y_train)
+    train_data = gtzandata(x_train, y_train)
     valid_data = gtzandata(x_valid, y_valid)
     test_data = gtzandata(x_test, y_test)
 
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, drop_last=True)
-    valid_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=True, drop_last=True)
-    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True, drop_last=False)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=True, drop_last=False)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, drop_last=False)
 
     # load model
     if args.gpu_use == 1:
@@ -104,12 +106,13 @@ def main():
     torch.save(model, "model.pt")
 
     # load model
-    #model = torch.load("model.pt")
+    # model = torch.load("model.pt")
 
     print("--- %s seconds spent ---" % (time.time() - start_time))
 
     # evaluation
     avg_loss, output_all, label_all = eval(model, test_loader, criterion, args)
+
     prediction = np.concatenate(output_all)
     prediction = prediction.reshape(-1, 10)
     prediction = prediction.argmax(axis=1)

@@ -106,3 +106,4 @@ gtzan_mel/
 logs/
 
 *.pt
+.DS_Store

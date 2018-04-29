@@ -14,7 +14,8 @@ import random
 
 
 # data loader
-class gtzan_train_data(Dataset):
+
+class gtzandata(Dataset):
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -29,30 +30,6 @@ class gtzan_train_data(Dataset):
         # num_frames = 256
         # start = random.randint(0, self.x[index].shape[1] - num_frames)
         # mel = self.x[index][:, start:start + num_frames]  # 128, 256
-
-        entry = {'mel': mel, 'label': self.y[index]}
-
-        return entry
-
-    def __len__(self):
-        return self.x.shape[0]
-
-
-class gtzandata(Dataset):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __getitem__(self, index):
-
-        # 30 sec -> 1287 frames
-        # 6 sec  -> 256 frames
-        # mel = self.x[index]  # 128, 256
-
-        # 6 sec -> 256 frames
-        num_frames = 256
-        start = random.randint(0, self.x[index].shape[1] - num_frames)
-        mel = self.x[index][:, start:start + num_frames]  # 128, 256
 
         entry = {'mel': mel, 'label': self.y[index]}
 
