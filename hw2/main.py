@@ -87,11 +87,11 @@ def main():
 
     # load model
     if args.gpu_use == 1:
-        model = model_1DCNN().cuda(args.which_gpu)
-        # model = model_2DCNN().cuda(args.which_gpu)
+        # model = model_1DCNN().cuda(args.which_gpu)
+        model = model_2DCNN().cuda(args.which_gpu)
     elif args.gpu_use == 0:
-        model = model_1DCNN()
-        # model = model_2DCNN()
+        # model = model_1DCNN()
+        model = model_2DCNN()
 
     # model.apply(init_weights)
 
@@ -106,10 +106,10 @@ def main():
 
     # save model
     fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs, args)
-    torch.save(model, "model.pt")
+    torch.save(model.state_dict(), './model.pth')
 
     # load model
-    # model = torch.load("model.pt")
+    # model.load_state_dict(torch.load('./model.pth'))
 
     print("--- %s seconds spent ---" % (time.time() - start_time))
 
