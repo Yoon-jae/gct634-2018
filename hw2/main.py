@@ -63,6 +63,9 @@ def main():
     # 443, 197, 290 (128, 1287)
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
 
+    # For eval
+    y_label = y_test
+
     # 3987, 1773, 2610 (128, 256)
     x_train, y_train = augment_data(x_train, y_train)
     x_valid, y_valid = augment_data(x_valid, y_valid)
@@ -114,13 +117,20 @@ def main():
     avg_loss, output_all, label_all = eval(model, test_loader, criterion, args)
 
     prediction = np.concatenate(output_all)
-    prediction = prediction.reshape(-1, 10)
     prediction = prediction.argmax(axis=1)
 
-    y_label = np.concatenate(label_all)
+    # Majority voting
+    final_pred = []
+    pred_len = len(prediction)
+    interval = int(pred_len / len(y_label))
+    starts = [start for start in range(0, len(prediction), interval)]
+    for start in starts:
+        count = np.bincount(prediction[start:start + interval - 1])
+        final_pred.append(np.argmax(count))
 
-    comparison = prediction - y_label
-    acc = float(len(y_test) - np.count_nonzero(comparison)) / len(y_test)
+    final_pred = np.array(final_pred)
+    comparison = final_pred - y_label
+    acc = float(len(y_label) - np.count_nonzero(comparison)) / len(y_label)
     print('Test Accuracy: {:.4f} \n'.format(acc))
 
 
