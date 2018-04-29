@@ -9,7 +9,7 @@ from __future__ import print_function
 import torch
 import torch.nn as nn
 
-# batch_size = 5
+# batch_size = 64
 # num_frames = 512
 
 # model class
@@ -32,14 +32,13 @@ class model_1DCNN(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(224, 64),
+            nn.Linear(96, 64),
             nn.Linear(64, 10)
         )
 
-        # self.activation = nn.Softmax()
-
     def forward(self, x):
-        # input x: minibatch x 128 x 128
+        # input x: minibatch x 128 x 256
+
         out = self.conv0(x)  # 5 32 63
         out = self.conv1(out)  # 5 32 7
 
@@ -47,7 +46,7 @@ class model_1DCNN(nn.Module):
         out = out.view(x.size(0), out.size(1) * out.size(2))
         out = self.fc(out)
 
-        out = nn.functional.log_softmax(out)
+        # out = nn.functional.log_softmax(out)
         # out = self.activation(out)
 
         return out

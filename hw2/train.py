@@ -55,10 +55,9 @@ def fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs,
             _, argmax = torch.max(outputs, 1)
             accuracy = (label == argmax.squeeze()).float().mean()
 
-            if (i + 1) % 10 == 0:
-                print("Epoch [%d/%d], Iter [%d/%d], Loss : %.4f, Acc: %.4f"
-                      % (epoch + 1, num_epochs, i + 1, len(train_loader),
-                         loss.data[0], accuracy.data[0]))
+            if (i + 1) % 100 == 0:
+                print("Epoch [%d/%d], Iter [%d/%d], Loss : %.4f"
+                      % (epoch + 1, num_epochs, i + 1, len(train_loader), loss.data[0]))
 
                 # (1) Log the scalar values
                 info = {
@@ -101,8 +100,13 @@ def eval(model, valid_loader, criterion, args):
             audio = Variable(audio).type(torch.FloatTensor)
             label = Variable(label).type(torch.LongTensor)
 
-        outputs = model(audio)
+        outputs = model(audio) # batch size x 10
+        # label -> batch x 1
+
         loss = criterion(outputs, label)
+
+        m = nn.Softmax()
+        outputs = m(outputs)
 
         eval_loss += loss.data[0]
 

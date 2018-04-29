@@ -76,57 +76,28 @@ def load_data(label_path, mel_path, melBins, frames):
     return x_train, y_train, x_valid, y_valid, x_test, y_test
 
 
-def augment_data(x_train, y_train, x_valid, y_valid, x_test, y_test, melBins):
+def augment_data(X, y, melBins=128):
     frame_size = 256
     hop_size = 128
 
-    # Train set
-    num_of_examples, num_of_features, total_frame = x_train.shape  # 443 128 1287
+    num_of_examples, num_of_features, total_frame = X.shape  # 443 128 1287
     starts = [start for start in range(0, total_frame - frame_size, hop_size)]
     split_size = len(starts)
 
-    aug_x_train = np.zeros((split_size * num_of_examples, melBins, frame_size))
-    aug_y_train = np.zeros((split_size * num_of_examples,))
+    aug_x = np.zeros((split_size * num_of_examples, melBins, frame_size))
+    aug_y = np.zeros((split_size * num_of_examples,))
 
     pointer = 0
-    for sample_index, sample in enumerate(x_train):
+    for sample_index, sample in enumerate(X):
         for window_index, start in enumerate(starts):
-            aug_x_train[pointer + window_index] = sample[:, start:start + frame_size]
-            aug_y_train[pointer + window_index] = y_train[sample_index]
+            aug_x[pointer + window_index] = sample[:, start:start + frame_size]
+            aug_y[pointer + window_index] = y[sample_index]
         pointer += split_size
 
-    # Valid set
-    num_of_examples, num_of_features, total_frame = x_valid.shape  # 443 128 1287
-    starts = [start for start in range(0, total_frame - frame_size, hop_size)]
-    split_size = len(starts)
+    # print("aug_x :", aug_x.shape)
+    # print("aug_y :", aug_y.shape)
 
-    aug_x_valid = np.zeros((split_size * num_of_examples, melBins, frame_size))
-    aug_y_valid = np.zeros((split_size * num_of_examples,))
-
-    pointer = 0
-    for sample_index, sample in enumerate(x_valid):
-        for window_index, start in enumerate(starts):
-            aug_x_valid[pointer + window_index] = sample[:, start:start + frame_size]
-            aug_y_valid[pointer + window_index] = y_valid[sample_index]
-        pointer += split_size
-
-
-    # Test set
-    num_of_examples, num_of_features, total_frame = x_test.shape  # 443 128 1287
-    starts = [start for start in range(0, total_frame - frame_size, hop_size)]
-    split_size = len(starts)
-
-    aug_x_test = np.zeros((split_size * num_of_examples, melBins, frame_size))
-    aug_y_test = np.zeros((split_size * num_of_examples,))
-
-    pointer = 0
-    for sample_index, sample in enumerate(x_test):
-        for window_index, start in enumerate(starts):
-            aug_x_test[pointer + window_index] = sample[:, start:start + frame_size]
-            aug_y_test[pointer + window_index] = y_test[sample_index]
-        pointer += split_size
-
-    return aug_x_train, aug_y_train, aug_x_valid, aug_y_valid, aug_x_test, aug_y_test
+    return aug_x, aug_y
 
 
 if __name__ == '__main__':
@@ -137,4 +108,4 @@ if __name__ == '__main__':
     frames = int(29.9 * 22050.0 / hop)
 
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
-    augment_data(x_train, y_train, x_valid, y_valid, x_test, y_test, melBins)
+    augment_data(x_train, y_train)

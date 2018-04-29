@@ -63,14 +63,16 @@ def main():
     # 443, 197, 290 (128, 1287)
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
 
-    # 3987, 1773, 2610 (128, 256)
-    x_train, y_train, x_valid, y_valid, x_test, y_test = augment_data(x_train, y_train, x_valid, y_valid, x_test, y_test, melBins)
+    # 3987, 128, 256
+    x_train, y_train = augment_data(x_train, y_train)
+
+    # x_test, y_test
     print("train data: ", x_train.shape, y_train.shape, type(x_train), type(y_train))
     print("valid data: ", x_valid.shape, y_valid.shape)
     print("test data : ", x_test.shape, y_test.shape)
 
     # data loader
-    train_data = gtzandata(x_train, y_train)
+    train_data = gtzan_train_data(x_train, y_train)
     valid_data = gtzandata(x_valid, y_valid)
     test_data = gtzandata(x_test, y_test)
 
@@ -86,7 +88,7 @@ def main():
         model = model_1DCNN()
         # model = model_2DCNN()
 
-    model.apply(init_weights)
+    # model.apply(init_weights)
 
     print("Model :", model)
 
@@ -103,7 +105,6 @@ def main():
     avg_loss, output_all, label_all = eval(model, test_loader, criterion, args)
     prediction = np.concatenate(output_all)
     prediction = prediction.reshape(-1, 10)
-    # prediction = prediction.reshape(len(y_test), 10)
     prediction = prediction.argmax(axis=1)
 
     y_label = np.concatenate(label_all)
