@@ -63,7 +63,7 @@ def main():
     # 443, 197, 290 (128, 1287)
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(label_path, mel_path, melBins, frames)
 
-    # For eval
+    # For eval & test
     y_label = y_test
 
     # 3987, 1773, 2610 (128, 256)
@@ -82,7 +82,7 @@ def main():
     test_data = gtzandata(x_test, y_test)
 
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, drop_last=False)
-    valid_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=True, drop_last=False)
+    valid_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=False, drop_last=False)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False, drop_last=False)
 
     # load model
@@ -114,7 +114,7 @@ def main():
     print("--- %s seconds spent ---" % (time.time() - start_time))
 
     # evaluation
-    avg_loss, output_all, label_all = eval(model, test_loader, criterion, args)
+    avg_loss, output_all, label_all = test(model, test_loader, criterion, args)
 
     prediction = np.concatenate(output_all)
     prediction = prediction.argmax(axis=1)

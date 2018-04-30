@@ -53,6 +53,7 @@ def fit(model, train_loader, valid_loader, criterion, learning_rate, num_epochs,
                       % (epoch + 1, num_epochs, i + 1, len(train_loader), loss.data[0]))
 
         eval_loss, _, _ = eval(model, valid_loader, criterion, args)
+
         scheduler.step(eval_loss)  # use the learning rate scheduler
         curr_lr = optimizer.param_groups[0]['lr']
         print('Learning rate : {}'.format(curr_lr))
@@ -90,7 +91,56 @@ def eval(model, valid_loader, criterion, args):
         output_all.append(outputs.data.cpu().numpy())
         label_all.append(label.data.cpu().numpy())
 
+
+
+
+    # Majority voting
+    prediction = np.concatenate(output_all)
+    prediction = prediction.argmax(axis=1)
+
+    valid_pred = []
+    pred_len = len(prediction)
+    interval =int(pred_len / len(y_label))
+
+
+
+
     avg_loss = eval_loss / len(valid_loader)
     print('Average loss: {:.4f} \n'.format(avg_loss))
+
+    return avg_loss, output_all, label_all
+
+
+def test(model, test_loader, criterion, args):
+    eval_loss = 0.0
+    output_all = []
+    label_all = []
+
+    model.eval()
+    for i, data in enumerate(test_loader):
+        audio = data['mel']
+        label = data['label']
+        # have to convert to an autograd.Variable type in order to keep track of the gradient...
+        if args.gpu_use == 1:
+            audio = Variable(audio).type(torch.FloatTensor).cuda(args.which_gpu)
+            label = Variable(label).type(torch.LongTensor).cuda(args.which_gpu)
+        elif args.gpu_use == 0:
+            audio = Variable(audio).type(torch.FloatTensor)
+            label = Variable(label).type(torch.LongTensor)
+
+        outputs = model(audio)  # batch size x 10
+
+        loss = criterion(outputs, label)
+
+        m = nn.Softmax()
+        outputs = m(outputs)
+
+        eval_loss += loss.data[0]
+
+        output_all.append(outputs.data.cpu().numpy())
+        label_all.append(label.data.cpu().numpy())
+
+    avg_loss = eval_loss / len(test_loader)
+    print('Test Average loss: {:.4f} \n'.format(avg_loss))
 
     return avg_loss, output_all, label_all
