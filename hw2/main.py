@@ -37,7 +37,7 @@ melBins = 128
 hop = 512
 frames = int(29.9 * 22050.0 / hop)
 
-batch_size = 5
+batch_size = 9
 
 learning_rate = 0.01
 num_epochs = 50
@@ -87,13 +87,13 @@ def main():
 
     # load model
     if args.gpu_use == 1:
-        # model = model_1DCNN().cuda(args.which_gpu)
+        model = model_1DCNN().cuda(args.which_gpu)
         # model = model_2DCNN().cuda(args.which_gpu)
-        model = ImageNet().cuda(args.which_gpu)
+        # model = ImageNet().cuda(args.which_gpu)
     elif args.gpu_use == 0:
-        # model = model_1DCNN()
+        model = model_1DCNN()
         # model = model_2DCNN()
-        model = ImageNet()
+        # model = ImageNet()
 
     # model.apply(init_weights)
 

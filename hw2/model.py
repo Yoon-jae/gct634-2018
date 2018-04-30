@@ -124,7 +124,9 @@ class InceptionA(torch.nn.Module):
         branch_pool = self.branch_pool(branch_pool)
 
         outputs = [branch1x1, branch5x5, branch3x3dbl, branch_pool]
-        return torch.cat(outputs, dim=1)
+        outputs = torch.cat(outputs, dim=1)
+        
+        return outputs
 
 
 class ImageNet(torch.nn.Module):
@@ -133,20 +135,29 @@ class ImageNet(torch.nn.Module):
 
         self.conv0 = nn.Sequential(
             nn.Conv2d(1, 10, kernel_size=5),
+            nn.BatchNorm2d(10),
             nn.MaxPool2d(4),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Dropout(0.2)
         )
 
         self.conv1 = nn.Sequential(
             nn.Conv2d(88, 20, kernel_size=5),
+            nn.BatchNorm2d(20),
             nn.MaxPool2d(4),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Dropout(0.2)
         )
 
         self.incept0 = InceptionA(in_channels=10)
         self.incept1 = InceptionA(in_channels=20)
 
-        self.fc = torch.nn.Linear(7392, 10)
+        self.fc = nn.Sequential(
+            nn.Linear(7392, 512),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, 10)
+        )
 
     def forward(self, x):
         # input x: minibatch x 128 x 256
