@@ -87,11 +87,13 @@ def main():
 
     # load model
     if args.gpu_use == 1:
-        model = model_1DCNN().cuda(args.which_gpu)
+        # model = model_1DCNN().cuda(args.which_gpu)
         # model = model_2DCNN().cuda(args.which_gpu)
+        model = ImageNet().cuda(args.which_gpu)
     elif args.gpu_use == 0:
-        model = model_1DCNN()
+        # model = model_1DCNN()
         # model = model_2DCNN()
+        model = ImageNet()
 
     # model.apply(init_weights)
 
