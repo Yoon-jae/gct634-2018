@@ -87,11 +87,11 @@ def main():
 
     # load model
     if args.gpu_use == 1:
-        # model = model_1DCNN().cuda(args.which_gpu)
-        model = model_2DCNN().cuda(args.which_gpu)
+        model = model_1DCNN().cuda(args.which_gpu)
+        # model = model_2DCNN().cuda(args.which_gpu)
     elif args.gpu_use == 0:
-        # model = model_1DCNN()
-        model = model_2DCNN()
+        model = model_1DCNN()
+        # model = model_2DCNN()
 
     # model.apply(init_weights)
 
@@ -114,7 +114,7 @@ def main():
     print("--- %s seconds spent ---" % (time.time() - start_time))
 
     # evaluation
-    avg_loss, output_all, label_all = test(model, test_loader, criterion, args)
+    avg_loss, output_all, label_all = eval(model, test_loader, criterion, args)
 
     prediction = np.concatenate(output_all)
     prediction = prediction.argmax(axis=1)
