@@ -36,4 +36,6 @@ class gtzandata(Dataset):
         return entry
 
     def __len__(self):
+
         return self.x.shape[0]
+

@@ -15,8 +15,9 @@ from torch.autograd import Variable
 
 import model_archive
 
+
 class Wrapper(object):
-    #Settings of model, loss function, optimizer and scheduler
+    # Settings of model, loss function, optimizer and scheduler
     def __init__(self, input_size, num_class, learn_rate):
         super(Wrapper, self).__init__()
         self.model = model_archive.RNN(input_size, num_class)
@@ -24,25 +25,27 @@ class Wrapper(object):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learn_rate)
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.2, patience=3, verbose=True)
 
-    #Accuracy function works like criterion in pytorch
+    # Accuracy function works like criterion in pytorch
     def accuracy(self, prediction, reference):
         prediction = prediction.max(1)[1].type(torch.LongTensor)
         reference = reference.cpu()
         correct = (prediction == reference).sum().data[0]
 
-        return correct/float(prediction.size(0))
+        return correct / float(prediction.size(0))
 
-    #Running model function for train, test and validation.
+    # Running model function for train, test and validation.
     def run_model(self, x, y, device=0, mode='train'):
-        if mode == 'train': self.model.train()
-        elif mode == 'eval': self.model.eval()
+        if mode == 'train':
+            self.model.train()
+        elif mode == 'eval':
+            self.model.eval()
 
         output_list = []
         total_acc = 0
         total_loss = 0
 
         for batch in range(x.shape[0]):
-            input = Variable(torch.from_numpy(x[batch:batch+1])).type(torch.FloatTensor)
+            input = Variable(torch.from_numpy(x[batch:batch + 1])).type(torch.FloatTensor)
             label = Variable(torch.LongTensor(y[batch]))
             if device > 0:
                 input = input.cuda(device - 1)
@@ -63,23 +66,23 @@ class Wrapper(object):
             total_loss += loss.data[0]
 
         total_output = np.concatenate(output_list).argmax(axis=1)
-        total_acc = total_acc/x.shape[0]
-        total_loss = total_loss/x.shape[0]
+        total_acc = total_acc / x.shape[0]
+        total_loss = total_loss / x.shape[0]
 
         return total_output, total_acc, total_loss
 
-    #Early stopping function from validation loss
+    # Early stopping function from validation loss
     def early_stop(self, loss):
         self.scheduler.step(loss)
         current_lr = self.optimizer.param_groups[0]['lr']
-        print('Learning Rate : ' + str(round(current_lr,4)))
+        print('Learning Rate : ' + str(round(current_lr, 4)))
         stop = (current_lr < 1e-5)
         if stop:
             print('Early stopping\n\n')
 
         return stop
 
-    #Function for saving trained model, annotation and predictionin given directory
+    # Function for saving trained model, annotation and predictionin given directory
     def export(self, export_dir, chroma, annotation, prediction):
         if not os.path.exists(os.path.dirname(export_dir)):
             os.makedirs(os.path.dirname(export_dir))

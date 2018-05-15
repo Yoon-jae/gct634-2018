@@ -16,15 +16,16 @@ import numpy as np
 import data_manager
 from model_wrapper import Wrapper
 
+
 def main():
-    #Directory Settings
+    # Directory Settings
     DATASET_DIR = './dataset/'
     EXPORT_DIR = './export/baseline_beatsync_result/'
 
-    #Parameter Settings
+    # Parameter Settings
     MODE = 'beatsync'
-    DEVICE = 0 # 0 : cpu, 1 : gpu0, 2 : gpu1, ...
-    NUM_CLASS = 25 # 0 : Silence, 1 - 12: Major, 13 - 24: Minor, Don't change this parameter
+    DEVICE = 0  # 0 : cpu, 1 : gpu0, 2 : gpu1, ...
+    NUM_CLASS = 25  # 0 : Silence, 1 - 12: Major, 13 - 24: Minor, Don't change this parameter
     EPOCH = 200
     BATCH_SIZE = 32
     LEARN_RATE = 0.0001
@@ -45,20 +46,20 @@ def main():
     BATCH_SIZE = args.batch_size
     LEARN_RATE = args.learn_rate
 
-    #Preprocess
+    # Preprocess
     x, y, info_test = data_manager.preprocess(DATASET_DIR, BATCH_SIZE, mode=MODE)
     total_batch = float(x.train.shape[0] + x.test.shape[0] + x.valid.shape[0])
     print('Data Loaded\n'
-        + 'Train Ratio : ' + str(round(100*x.train.shape[0]/total_batch, 2))
-        + '%, Test Ratio : ' + str(round(100*x.test.shape[0]/total_batch, 2))
-        + '%, Valid Ratio : ' + str(round(100*x.valid.shape[0]/total_batch, 2)) + '%')
+          + 'Train Ratio : ' + str(round(100 * x.train.shape[0] / total_batch, 2))
+          + '%, Test Ratio : ' + str(round(100 * x.test.shape[0] / total_batch, 2))
+          + '%, Valid Ratio : ' + str(round(100 * x.valid.shape[0] / total_batch, 2)) + '%')
 
     acc_train = np.zeros(EPOCH)
     acc_valid = np.zeros(EPOCH)
     loss_train = np.zeros(EPOCH)
     loss_valid = np.zeros(EPOCH)
 
-    #Train
+    # Train
     print('\n--------- Training Start ---------')
     wrapper = Wrapper(x.train.shape[2], NUM_CLASS, LEARN_RATE)
 
@@ -68,25 +69,26 @@ def main():
 
         if wrapper.early_stop(loss_valid[e]): break
 
-        print('Epoch [' + str(e+1).zfill(3) + '/' + str(EPOCH) + ']'
-         + ' acc : ' + str(round(acc_train[e],4)) + ' - val_acc : ' + str(round(acc_valid[e],4))
-         + ' | loss : ' + str(round(loss_train[e],4)) + ' - val_loss : ' + str(round(loss_valid[e],4)))
+        print('Epoch [' + str(e + 1).zfill(3) + '/' + str(EPOCH) + ']'
+              + ' acc : ' + str(round(acc_train[e], 4)) + ' - val_acc : ' + str(round(acc_valid[e], 4))
+              + ' | loss : ' + str(round(loss_train[e], 4)) + ' - val_loss : ' + str(round(loss_valid[e], 4)))
     print('-------- Training Finished -------')
 
-    #Test
+    # Test
     pred_test, _, _ = wrapper.run_model(x.test, y.test, DEVICE, 'eval')
 
     chroma_test = data_manager.batch_dataset(info_test.chroma, BATCH_SIZE)
     chord_test = data_manager.batch_dataset(info_test.chord, BATCH_SIZE)
-    chroma_test = chroma_test.reshape(chroma_test.shape[0]*chroma_test.shape[1], chroma_test.shape[2])
-    chord_test = chord_test.reshape(chord_test.shape[0]*chord_test.shape[1])
+    chroma_test = chroma_test.reshape(chroma_test.shape[0] * chroma_test.shape[1], chroma_test.shape[2])
+    chord_test = chord_test.reshape(chord_test.shape[0] * chord_test.shape[1])
 
     acc_test, pred_test = data_manager.frame_accuracy(chord_test, pred_test, info_test, BATCH_SIZE, mode=MODE)
-    print('\nTest Accuracy : ' + str(round(100*acc_test,2)) + '%')
+    print('\nTest Accuracy : ' + str(round(100 * acc_test, 2)) + '%')
 
-    #Export
+    # Export
     wrapper.export(EXPORT_DIR, chroma_test, chord_test, pred_test)
     print('Exported files to ' + os.path.abspath(EXPORT_DIR))
+
 
 if __name__ == '__main__':
     main()

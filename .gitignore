@@ -107,3 +107,6 @@ logs/
 
 *.pt
 .DS_Store
+
+.idea/
+dataset/
