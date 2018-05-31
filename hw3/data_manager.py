@@ -35,16 +35,25 @@ def load_data(data_dir):
     return data_list
 
 
-# Converting list into batched numpy and the obtained shape is (number of batch, batch size, extra dimension)
-def batch_dataset(dataset, batch_size):
+# Converting list into batched numpy and the obtained shape is (number of batch, batch size, sequence_length, extra dimension)
+def batch_dataset(dataset, batch_size, seq_length=1):
     batch_data_list = []
     for data in dataset:
         num_batch = int(np.floor(data.shape[0] / batch_size))
-        batch_data = data[:num_batch * batch_size]
         if data.ndim == 1:
+            batch_data = data[:num_batch * batch_size]
             batch_data = batch_data.reshape(num_batch, batch_size)
+
         elif data.ndim == 2:
-            batch_data = batch_data.reshape(num_batch, batch_size, data.shape[1])
+            batch_data = np.zeros((num_batch * batch_size, seq_length, data.shape[-1]))
+            for i in range(num_batch * batch_size):
+                init_frame = max(0, i - (seq_length - 1))
+                frame_length = i + 1 - init_frame
+                init_seq = max(0, (seq_length - 1) - i)
+                batch_data[i, init_seq:init_seq + frame_length] = data[init_frame:i + 1]
+
+            batch_data = batch_data.reshape(num_batch, batch_size, seq_length, data.shape[-1])
+
         batch_data_list.append(batch_data)
 
     return np.concatenate(batch_data_list, axis=0)
@@ -72,7 +81,7 @@ def beatsync(chroma, chord, beat):
 
 # Function to preprocess raw data into seperated and batched dataset and chroma, chord and beat information
 # 'frame' mode for frame level chroma and 'beatsync' mode for beat-synchronous chroma
-def preprocess(dataset_dir, batch_size, train_ratio=0.6, test_ratio=0.2, mode='frame'):
+def preprocess(dataset_dir, batch_size, seq_length=1, train_ratio=0.6, test_ratio=0.2, mode='frame'):
     chroma = load_data(os.path.join(dataset_dir, 'chroma'))
     chord = load_data(os.path.join(dataset_dir, 'chord'))
     if mode == 'frame':
@@ -85,9 +94,9 @@ def preprocess(dataset_dir, batch_size, train_ratio=0.6, test_ratio=0.2, mode='f
     train_size = int(np.round(len(x) * train_ratio))
     test_size = int(np.round(len(x) * test_ratio))
 
-    x_train = batch_dataset(x[:train_size], batch_size)
-    x_test = batch_dataset(x[train_size:train_size + test_size], batch_size)
-    x_valid = batch_dataset(x[train_size + test_size:], batch_size)
+    x_train = batch_dataset(x[:train_size], batch_size, seq_length)
+    x_test = batch_dataset(x[train_size:train_size + test_size], batch_size, seq_length)
+    x_valid = batch_dataset(x[train_size + test_size:], batch_size, seq_length)
 
     y_train = batch_dataset(y[:train_size], batch_size)
     y_test = batch_dataset(y[train_size:train_size + test_size], batch_size)
@@ -109,29 +118,18 @@ def preprocess(dataset_dir, batch_size, train_ratio=0.6, test_ratio=0.2, mode='f
 # 'beatsync' mode use info and batch size, especially use timing information in info.chord and info.beat
 def frame_accuracy(annotation, prediction, info=None, batch_size=None, mode='frame'):
     if mode == 'beatsync':
-        batch_beat = batch_dataset(info.beat, batch_size)
-        batch_beat = batch_beat.reshape(batch_beat.shape[0] * batch_beat.shape[1])
+        current_beat = 0
+        prediction_frame_list = []
+        for i in range(len(info.chroma)):  # Iteration of songs
+            num_song_frame = int(info.chroma[i].shape[0] / batch_size) * batch_size
+            prediction_song_frame = np.zeros(num_song_frame)
+            num_beat = int((info.beat[i].shape[0] - 1) / batch_size) * batch_size
+            for j in range(num_beat):
+                prediction_song_frame[info.beat[i][j]:info.beat[i][j + 1]] = prediction[current_beat + j]
+            prediction_frame_list.append(prediction_song_frame)
+            current_beat += num_beat
 
-        num_frame = 0
-        for el in info.chord:
-            num_frame += int(el.shape[0] / batch_size) * batch_size
-        prediction_frame = np.zeros(num_frame)
-
-        current_frame = batch_beat[0]
-        current_song = 0
-        for i in range(batch_beat.shape[0] - 1):
-            num_frame = batch_beat[i + 1] - batch_beat[i]
-            if num_frame > 0:  # frame in a song
-                prediction_frame[current_frame:current_frame + num_frame] = prediction[i]
-                current_frame = num_frame + current_frame
-            else:  # end frame of a song
-                end_frame = int(info.chord[current_song].shape[0] / batch_size) * batch_size
-                num_frame = end_frame - batch_beat[i]
-                prediction_frame[current_frame:current_frame + num_frame] = prediction[i]
-                current_frame = num_frame + current_frame + batch_beat[i + 1]
-                current_song += 1
-
-        prediction = prediction_frame
+        prediction = np.concatenate(prediction_frame_list)
 
     accuracy = 1 - np.count_nonzero(prediction - annotation) / float(prediction.shape[0])
 

@@ -20,7 +20,8 @@ class Wrapper(object):
     # Settings of model, loss function, optimizer and scheduler
     def __init__(self, input_size, num_class, learn_rate):
         super(Wrapper, self).__init__()
-        self.model = model_archive.RNN(input_size, num_class)
+        # self.model = model_archive.RNN(input_size, num_class)
+        self.model = model_archive.CRNN(input_size, num_class)
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learn_rate)
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='min', factor=0.2, patience=3, verbose=True)
@@ -45,7 +46,7 @@ class Wrapper(object):
         total_loss = 0
 
         for batch in range(x.shape[0]):
-            input = Variable(torch.from_numpy(x[batch:batch + 1])).type(torch.FloatTensor)
+            input = Variable(torch.from_numpy(x[batch].transpose((1, 0, 2))).type(torch.FloatTensor))
             label = Variable(torch.LongTensor(y[batch]))
             if device > 0:
                 input = input.cuda(device - 1)
